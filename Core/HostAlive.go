@@ -47,11 +47,11 @@ func pingHost(host string) bool {
 	var command *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
-		command = exec.Command("cmd", "/c", "ping -n 1 -w 1 "+host+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
+		command = exec.Command("cmd", "/c", "ping -n 2 -w 10 "+host+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
 	case "darwin":
-		command = exec.Command("/bin/bash", "-c", "ping -c 1 -W 1 "+host+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
+		command = exec.Command("/bin/bash", "-c", "ping -c 1 -W 10 "+host+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
 	default: //linux
-		command = exec.Command("/bin/bash", "-c", "ping -c 1 -w 1 "+host+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
+		command = exec.Command("/bin/bash", "-c", "ping -c 1 -w 10 "+host+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
 	}
 	outinfo := bytes.Buffer{}
 	command.Stdout = &outinfo

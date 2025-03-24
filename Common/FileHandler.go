@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// 从文件中读取数据，并返回一个字符串切片
 func ReadFile(filename string) ([]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {

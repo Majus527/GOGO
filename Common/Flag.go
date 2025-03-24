@@ -9,8 +9,10 @@ import (
 )
 
 type InputInfo struct {
-	Hosts    string
-	HostFile string
+	Hosts           string
+	HostFileAddress string
+	HostFile        []string
+	Ports           string
 }
 
 func Banner() {
@@ -63,32 +65,41 @@ func Banner() {
 func (input *InputInfo) Flag() {
 	// 目标配置
 	flag.StringVar(&input.Hosts, "h", "", "输入目标ip或域名(,分隔)")
-	flag.StringVar(&input.HostFile, "hf", "", "地址列表, -hf ip.txt")
+	flag.StringVar(&input.HostFileAddress, "hf", "", "地址列表, -hf ip.txt")
+	flag.StringVar(&input.Ports, "p", "1", "端口扫描(1.WEB端口,2.精简端口,3.全端口)")
 
 	flag.Parse()
 }
 
+// 分析用户的输入
 func (input *InputInfo) AnalyseUserInput() error {
-	if input.HostFile == "" {
-		return nil
+	// -hf，读取文件  把文件内容读到input.HostFile中
+	if input.HostFileAddress != "" {
+		err := input.hostsFromFile()
+		return err
 	}
 
+	return nil
+}
+
+func (input *InputInfo) hostsFromFile() error {
 	// 验证文件是否存在
-	if _, err := os.Stat(input.HostFile); os.IsNotExist(err) {
-		return fmt.Errorf("file does not exist: %s", input.HostFile)
+	if _, err := os.Stat(input.HostFileAddress); os.IsNotExist(err) {
+		return fmt.Errorf("file does not exist: %s", input.HostFileAddress)
 	}
 
 	// 验证是否有读取权限
-	if _, err := os.Open(input.HostFile); os.IsPermission(err) {
-		return fmt.Errorf("permission denied: %s", input.HostFile)
+	if _, err := os.Open(input.HostFileAddress); os.IsPermission(err) {
+		return fmt.Errorf("permission denied: %s", input.HostFileAddress)
 	}
 
 	// 读取文件
-	hosts, err := ReadFile(input.HostFile)
+	hosts, err := ReadFile(input.HostFileAddress)
 	if err != nil {
 		return fmt.Errorf("error reading file: %w", err)
 	}
 
-	input.Hosts = strings.Join(hosts, ",")
+	input.HostFile = hosts
+
 	return nil
 }
