@@ -28,27 +28,40 @@ func NewPortScanner(target []string, ports []string, timeout time.Duration) *Por
 
 // TCP扫描
 func (ps *PortScanner) TCPScan() {
+	sem := make(chan struct{}, 999) // 控制最大并发数
+
 	for _, ip := range ps.target {
 		ps.IpPortAlive[ip] = []string{}
+
 		for _, port := range ps.ports {
+			sem <- struct{}{} // 获取信号量
 			ps.wg.Add(1)
-			go ps.TCPCheckPort(ip, port)
+
+			go func(ip string, port string) {
+				defer func() {
+					<-sem // 释放信号量
+					ps.wg.Done()
+				}()
+				ps.TCPCheckPort(ip, port)
+			}(ip, port)
 		}
 	}
 	ps.wg.Wait()
+	close(sem)
 }
 
 func (ps *PortScanner) TCPCheckPort(ip string, port string) {
-	defer ps.wg.Done()
 
 	address := fmt.Sprintf("%s:%s", ip, port)
 	conn, err := net.DialTimeout("tcp", address, ps.timeout)
 	if err != nil {
+		// fmt.Println(address, "is not open")
 		return
 	}
 	ps.mu.Lock()
 	ps.IpPortAlive[ip] = append(ps.IpPortAlive[ip], port)
 	ps.mu.Unlock()
+	fmt.Println(address, "is open")
 	if conn != nil {
 		conn.Close()
 	}

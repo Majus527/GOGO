@@ -41,7 +41,7 @@ func SeparateIPsAndDomains(input []string) ([]string, []string) {
 	return ips, domains
 }
 
-// 将用户输入的host全部返回
+// 将用户输入的host变成数组返回
 func InputHostsHandler(input *InputInfo) (hosts []string) {
 	if input.Hosts != "" {
 		hosts = strings.Split(input.Hosts, ",")

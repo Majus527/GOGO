@@ -25,3 +25,23 @@ func ReadFile(filename string) ([]string, error) {
 
 	return hosts, nil
 }
+
+// WriteArrayToFile 将字符串数组逐行写入文件
+func WriteArrayToFile(filename string, data []string) error {
+	// 打开文件，如果不存在则创建
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close() // 确保文件最终关闭
+
+	// 逐行写入数组数据
+	for _, line := range data {
+		_, err := file.WriteString(line + "\n") // 写入每一行并添加换行符
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
