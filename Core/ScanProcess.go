@@ -6,6 +6,7 @@ import (
 	"gogo/Common"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -101,7 +102,28 @@ func ScanProcess() {
 	}
 	color.Cyan("\n已将结果写入文件" + Common.PortPath)
 
-	// web探测
-	//color.Cyan("\n进行Web探测：")
+	// 指纹识别
+	var wg sync.WaitGroup
+	color.Cyan("\n进行指纹识别...")
+	sem := make(chan struct{}, 999) // 控制最大并发数
+	for ip, ports := range ps.IpPortAlive {
+		for _, port := range ports {
+			sem <- struct{}{} // 获取信号量
+			wg.Add(1)         // 计数器+1
+			go func(ip, port string) {
+				defer func() {
+					<-sem     // 释放信号量
+					wg.Done() // 确保计数器-1
+				}()
+				res := MatchPortFinger(ip, port)
+				if res != "Unknown" {
+					ps.mu.Lock() // 加锁保护输出
+					fmt.Println(ip + ":" + port + " is " + res)
+					ps.mu.Unlock()
+				}
+			}(ip, port) // 传递当前 ip/port 的副本
+		}
+	}
+	wg.Wait() // 等待所有 goroutine 完成
 
 }

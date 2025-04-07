@@ -58,10 +58,11 @@ func (ps *PortScanner) TCPCheckPort(ip string, port string) {
 		// fmt.Println(address, "is not open")
 		return
 	}
+	fmt.Println(address, "is open")
 	ps.mu.Lock()
 	ps.IpPortAlive[ip] = append(ps.IpPortAlive[ip], port)
 	ps.mu.Unlock()
-	fmt.Println(address, "is open")
+
 	if conn != nil {
 		conn.Close()
 	}
